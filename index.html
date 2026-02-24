@@ -1,47 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
- <head>
   <meta charset="UTF-8">
   <title>Sugarcane Disease Detection</title>
 
+  <!-- Teachable Machine Library -->
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
-</head>
+
+  <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 40px;
+      margin-top: 50px;
     }
-    h1 {
-      color: green;
-    }
+
     img {
       margin-top: 20px;
-      border-radius: 10px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
 
-  <h1>Sugarcane Disease Detector</h1>
+  <h1>Sugarcane Disease Detection 🌾</h1>
 
-  <input type="file" id="imageUpload" accept="image/*" />
-  <br><br>
-
+  <input type="file" id="imageUpload" accept="image/*">
   <div id="preview"></div>
-  <h2 id="result"></h2>
+  <div id="result"></div>
 
   <script>
     let model;
+    let modelReady = false;
 
     async function loadModel() {
       model = await tmImage.load("model.json", "metadata.json");
+      modelReady = true;
       console.log("Model Loaded Successfully");
     }
 
     loadModel();
 
     document.getElementById("imageUpload").addEventListener("change", async function (event) {
+
+      if (!modelReady) {
+        alert("Model is still loading. Please wait a few seconds and try again.");
+        return;
+      }
+
       const file = event.target.files[0];
       const img = document.createElement("img");
       img.src = window.URL.createObjectURL(file);
@@ -54,7 +65,7 @@
       img.onload = async () => {
         const prediction = await model.predict(img);
         prediction.sort((a, b) => b.probability - a.probability);
-  
+
         const top = prediction[0];
 
         document.getElementById("result").innerText =
