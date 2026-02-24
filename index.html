@@ -41,7 +41,7 @@
     let modelReady = false;
 
     async function loadModel() {
-      model = await tmImage.load("model.json", "metadata.json");
+      model = await tmImage.load("./model.json", "./metadata.json");
       modelReady = true;
       console.log("Model Loaded Successfully");
     }
