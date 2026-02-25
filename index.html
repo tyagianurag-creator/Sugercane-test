@@ -79,7 +79,16 @@
         prediction.sort((a, b) => b.probability - a.probability);
 
         const top = prediction[0];
+lastPrediction = top;
+document.getElementById("actions").style.display = "block";
 
+document.getElementById("btnCorrect").onclick = function() {
+  openFeedbackForm("Yes");
+};
+
+document.getElementById("btnWrong").onclick = function() {
+  openFeedbackForm("No");
+};
         document.getElementById("result").innerText =
           "Prediction: " +
           top.className +
