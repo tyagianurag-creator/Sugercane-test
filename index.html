@@ -25,8 +25,15 @@
       font-size: 20px;
       font-weight: bold;
     }
+    button {
+  padding:10px 14px;
+  margin:6px;
+  font-size:16px;
+  border-radius:10px;
+  cursor:pointer;
+}
   </style>
-  button {
+  
   padding:10px 14px;
   margin:6px;
   font-size:16px;
@@ -49,7 +56,9 @@
   <script>
     let model;
     let modelReady = false;
+let lastPrediction = null;
 
+const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
     async function loadModel() {
       model = await tmImage.load("./model.json", "./metadata.json");
       modelReady = true;
@@ -113,7 +122,7 @@ document.getElementById("btnWrong").onclick = function() {
   window.open(url, "_blank");
 }
   </script>
-let lastPrediction = null;
+
 
 const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
 </body>
