@@ -35,7 +35,11 @@
   <input type="file" id="imageUpload" accept="image/*">
   <div id="preview"></div>
   <div id="result"></div>
-
+<div id="actions" style="margin-top:16px; display:none;">
+  <button id="btnCorrect">✅ Correct</button>
+  <button id="btnWrong">❌ Wrong</button>
+  <button id="btnExpert">💬 WhatsApp Expert</button>
+</div>
   <script>
     let model;
     let modelReady = false;
