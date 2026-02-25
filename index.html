@@ -97,6 +97,21 @@ document.getElementById("btnWrong").onclick = function() {
           "%)";
       };
     });
+    function openFeedbackForm(correctValue) {
+  if (!lastPrediction) return;
+
+  const disease = encodeURIComponent(lastPrediction.className);
+  const conf = encodeURIComponent((lastPrediction.probability * 100).toFixed(2));
+  const correct = encodeURIComponent(correctValue);
+
+  const url =
+    FORM_BASE +
+    "&entry.1340582940=" + disease +
+    "&entry.432078826=" + conf +
+    "&entry.2027263940=" + correct;
+
+  window.open(url, "_blank");
+}
   </script>
 let lastPrediction = null;
 
