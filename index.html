@@ -54,6 +54,7 @@
   <div id="preview"></div>
   <div id="result"></div>
   <div id="warning" style="margin-top:10px; font-size:16px; display:none;"></div>
+  <div id="treatment" style="margin-top:10px; font-size:16px;"></div>
 <div id="actions" style="margin-top:16px; display:none;">
   <button id="btnCorrect">✅ Correct</button>
   <button id="btnWrong">❌ Wrong</button>
@@ -86,6 +87,33 @@ const T = {
     lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
     predPrefix: "नतीजा: "
   }
+  function getTreatment(disease) {
+  if (disease.toLowerCase().includes("red")) {
+    return {
+      en: "Remove infected canes immediately. Avoid water stagnation. Use recommended fungicide treatment.",
+      hi: "संक्रमित गन्ने तुरंत हटाएं। खेत में पानी जमा न होने दें। अनुशंसित फफूंदनाशक का उपयोग करें।"
+    };
+  }
+
+  if (disease.toLowerCase().includes("smut")) {
+    return {
+      en: "Remove smut whips early. Use disease-free seed cane. Avoid ratoon from infected fields.",
+      hi: "स्मट व्हिप्स को जल्दी हटाएं। रोगमुक्त बीज का उपयोग करें। संक्रमित खेत से रatoon न लें।"
+    };
+  }
+
+  if (disease.toLowerCase().includes("healthy")) {
+    return {
+      en: "Crop appears healthy. Maintain proper irrigation and regular field inspection.",
+      hi: "फसल स्वस्थ दिख रही है। उचित सिंचाई और नियमित निरीक्षण जारी रखें।"
+    };
+  }
+
+  return {
+    en: "",
+    hi: ""
+  };
+}
 };
 
 function applyLang() {
@@ -135,11 +163,14 @@ applyLang();
 
         const top = prediction[0];
         const confidence = top.probability * 100;
+        
 
 const warningEl = document.getElementById("warning");
 warningEl.style.display = "none";
 warningEl.innerText = "";
 document.getElementById("btnExpert").classList.remove("low-confidence");
+        const treatmentData = getTreatment(top.className);
+document.getElementById("treatment").innerText = treatmentData[lang];
 
 if (confidence < 70) {
   warningEl.style.display = "block";
