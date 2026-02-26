@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
  
-  <h1 id="title">KisanAI 🌾</h1>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
 
   <!-- Teachable Machine Library -->
@@ -69,7 +68,7 @@ const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Jo
 
 const T = {
   en: {
-    title: "Kissan AI 🌾",
+    title: "KisanAI 🌾",
     correct: "✅ Correct",
     wrong: "❌ Wrong",
     expert: "💬 WhatsApp Expert",
@@ -83,26 +82,29 @@ const T = {
     expert: "💬 WhatsApp सहायता",
     lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
     predPrefix: "नतीजा: "
+  }
 };
 
 function getTreatment(disease) {
-  if (disease.toLowerCase().includes("red")) {
+  const d = disease.toLowerCase();
+
+  if (d.includes("red")) {
     return {
-      en: "Remove infected canes immediately. Avoid water stagnation. Use recommended fungicide treatment.",
-      hi: "संक्रमित गन्ने तुरंत हटाएं। खेत में पानी जमा न होने दें। अनुशंसित फफूंदनाशक का उपयोग करें।"
+      en: "Remove infected plants. Avoid water stagnation. Use recommended fungicide.",
+      hi: "संक्रमित पौधे हटाएं। खेत में पानी जमा न होने दें। अनुशंसित फफूंदनाशक का उपयोग करें।"
     };
   }
 
-  if (disease.toLowerCase().includes("smut")) {
+  if (d.includes("smut")) {
     return {
       en: "Remove smut whips early. Use disease-free seed cane. Avoid ratoon from infected fields.",
-      hi: "स्मट व्हिप्स को जल्दी हटाएं। रोगमुक्त बीज का उपयोग करें। संक्रमित खेत से रatoon न लें।"
+      hi: "स्मट व्हिप्स जल्दी हटाएं। रोगमुक्त बीज लें। संक्रमित खेत से रatoon न लें।"
     };
   }
 
-  if (disease.toLowerCase().includes("healthy")) {
+  if (d.includes("healthy")) {
     return {
-      en: "Crop appears healthy. Maintain proper irrigation and regular field inspection.",
+      en: "Crop looks healthy. Maintain proper irrigation and regular field inspection.",
       hi: "फसल स्वस्थ दिख रही है। उचित सिंचाई और नियमित निरीक्षण जारी रखें।"
     };
   }
