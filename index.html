@@ -2,10 +2,12 @@
 <html>
 <head>
   <meta charset="UTF-8">
- 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+  <title>KisanAI 🌾</title>
 
-  <!-- Teachable Machine Library -->
+  <!-- TensorFlow JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+
+  <!-- Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
   <style>
@@ -24,198 +26,230 @@
       font-size: 20px;
       font-weight: bold;
     }
+
     button {
-  padding:10px 14px;
-  margin:6px;
-  font-size:16px;
-  border-radius:10px;
-  cursor:pointer;
-}
-     #warning {
-  color: #b71c1c;
-  font-weight: bold;
-}
-.low-confidence {
-  border: 2px solid #b71c1c;
-}
+      padding: 10px 14px;
+      margin: 6px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #warning {
+      color: #b71c1c;
+      font-weight: bold;
+    }
+
+    .low-confidence {
+      border: 2px solid #b71c1c;
+    }
   </style>
- 
-  
 </head>
 
 <body>
 
-<div style="margin-bottom:12px;">
-  <button id="langToggle">🌐 हिंदी</button>
-</div>
+  <h1 id="title">KisanAI 🌾</h1>
+
+  <div style="margin-bottom:12px;">
+    <button id="langToggle">🌐 हिंदी</button>
+  </div>
+
   <input type="file" id="imageUpload" accept="image/*">
   <div id="preview"></div>
   <div id="result"></div>
   <div id="warning" style="margin-top:10px; font-size:16px; display:none;"></div>
   <div id="treatment" style="margin-top:10px; font-size:16px;"></div>
-<div id="actions" style="margin-top:16px; display:none;">
-  <button id="btnCorrect">✅ Correct</button>
-  <button id="btnWrong">❌ Wrong</button>
-  <button id="btnExpert">💬 WhatsApp Expert</button>
-</div>
-  <script>
-    let model;
-    let modelReady = false;
-let lastPrediction = null;
 
-const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
-    let lang = "en"; // default
+  <div id="actions" style="margin-top:16px; display:none;">
+    <button id="btnCorrect">✅ Correct</button>
+    <button id="btnWrong">❌ Wrong</button>
+    <button id="btnExpert">💬 WhatsApp Expert</button>
+  </div>
 
-const T = {
-  en: {
-    title: "KisanAI 🌾",
-    correct: "✅ Correct",
-    wrong: "❌ Wrong",
-    expert: "💬 WhatsApp Expert",
-    lowConf: "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.",
-    predPrefix: "Prediction: "
-  },
-  hi: {
-    title: "किसान AI 🌾",
-    correct: "✅ सही",
-    wrong: "❌ गलत",
-    expert: "💬 WhatsApp सहायता",
-    lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
-    predPrefix: "नतीजा: "
-  }
-};
+<script>
 
-function getTreatment(disease) {
-  const d = disease.toLowerCase();
+  let model;
+  let modelReady = false;
+  let lastPrediction = null;
 
-  if (d.includes("red")) {
-    return {
-      en: "Remove infected plants. Avoid water stagnation. Use recommended fungicide.",
-      hi: "संक्रमित पौधे हटाएं। खेत में पानी जमा न होने दें। अनुशंसित फफूंदनाशक का उपयोग करें।"
-    };
-  }
+  const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
 
-  if (d.includes("smut")) {
-    return {
-      en: "Remove smut whips early. Use disease-free seed cane. Avoid ratoon from infected fields.",
-      hi: "स्मट व्हिप्स जल्दी हटाएं। रोगमुक्त बीज लें। संक्रमित खेत से रatoon न लें।"
-    };
-  }
+  let lang = "en";
 
-  if (d.includes("healthy")) {
-    return {
-      en: "Crop looks healthy. Maintain proper irrigation and regular field inspection.",
-      hi: "फसल स्वस्थ दिख रही है। उचित सिंचाई और नियमित निरीक्षण जारी रखें।"
-    };
-  }
+  const T = {
+    en: {
+      title: "KisanAI 🌾",
+      correct: "✅ Correct",
+      wrong: "❌ Wrong",
+      expert: "💬 WhatsApp Expert",
+      lowConf: "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.",
+      predPrefix: "Prediction: "
+    },
+    hi: {
+      title: "किसान AI 🌾",
+      correct: "✅ सही",
+      wrong: "❌ गलत",
+      expert: "💬 WhatsApp सहायता",
+      lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
+      predPrefix: "नतीजा: "
+    }
+  };
 
-  return { en: "", hi: "" };
-}
-};
+  function getTreatment(disease) {
+    const d = disease.toLowerCase();
 
-function applyLang() {
-  document.getElementById("title").innerText = T[lang].title;
-  document.getElementById("btnCorrect").innerText = T[lang].correct;
-  document.getElementById("btnWrong").innerText = T[lang].wrong;
-  document.getElementById("btnExpert").innerText = T[lang].expert;
-if (lastPrediction) {
-  const treatmentData = getTreatment(lastPrediction.className);
-  document.getElementById("treatment").innerText = treatmentData[lang];
-}
-  // toggle button text
-  document.getElementById("langToggle").innerText = (lang === "en") ? "🌐 हिंदी" : "🌐 English";
-}
-
-document.getElementById("langToggle").onclick = function() {
-  lang = (lang === "en") ? "hi" : "en";
-  applyLang();
-};
-
-// apply on load
-applyLang();
-    async function loadModel() {
-      model = await tmImage.load("./model.json", "./metadata.json");
-      modelReady = true;
-      console.log("Model Loaded Successfully");
+    if (d.includes("red")) {
+      return {
+        en: "Remove infected plants. Avoid water stagnation. Use recommended fungicide.",
+        hi: "संक्रमित पौधे हटाएं। खेत में पानी जमा न होने दें। अनुशंसित फफूंदनाशक का उपयोग करें।"
+      };
     }
 
-    loadModel();
+    if (d.includes("smut")) {
+      return {
+        en: "Remove smut whips early. Use disease-free seed cane. Avoid ratoon from infected fields.",
+        hi: "स्मट व्हिप्स जल्दी हटाएं। रोगमुक्त बीज लें। संक्रमित खेत से रatoon न लें।"
+      };
+    }
 
-    document.getElementById("imageUpload").addEventListener("change", async function (event) {
+    if (d.includes("healthy")) {
+      return {
+        en: "Crop looks healthy. Maintain proper irrigation and regular inspection.",
+        hi: "फसल स्वस्थ दिख रही है। उचित सिंचाई और नियमित निरीक्षण जारी रखें।"
+      };
+    }
 
-      if (!modelReady) {
-        alert("Model is still loading. Please wait a few seconds and try again.");
-        return;
+    return { en: "", hi: "" };
+  }
+
+  function applyLang() {
+    document.getElementById("title").innerText = T[lang].title;
+    document.getElementById("btnCorrect").innerText = T[lang].correct;
+    document.getElementById("btnWrong").innerText = T[lang].wrong;
+    document.getElementById("btnExpert").innerText = T[lang].expert;
+
+    document.getElementById("langToggle").innerText =
+      (lang === "en") ? "🌐 हिंदी" : "🌐 English";
+
+    if (lastPrediction) {
+      const treatmentData = getTreatment(lastPrediction.className);
+      document.getElementById("treatment").innerText = treatmentData[lang];
+      document.getElementById("result").innerText =
+        T[lang].predPrefix +
+        lastPrediction.className +
+        " (" +
+        (lastPrediction.probability * 100).toFixed(2) +
+        "%)";
+    }
+  }
+
+  document.getElementById("langToggle").onclick = function() {
+    lang = (lang === "en") ? "hi" : "en";
+    applyLang();
+  };
+
+  applyLang();
+
+  async function loadModel() {
+    model = await tmImage.load("./model.json", "./metadata.json");
+    modelReady = true;
+    console.log("Model Loaded Successfully");
+  }
+
+  loadModel();
+
+  document.getElementById("imageUpload").addEventListener("change", async function (event) {
+
+    if (!modelReady) {
+      alert("Model is still loading. Please wait a few seconds and try again.");
+      return;
+    }
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const img = document.createElement("img");
+    img.src = window.URL.createObjectURL(file);
+    img.width = 300;
+
+    const preview = document.getElementById("preview");
+    preview.innerHTML = "";
+    preview.appendChild(img);
+
+    img.onload = async () => {
+
+      const prediction = await model.predict(img);
+      prediction.sort((a, b) => b.probability - a.probability);
+
+      const top = prediction[0];
+      const confidence = top.probability * 100;
+
+      lastPrediction = top;
+
+      const warningEl = document.getElementById("warning");
+      warningEl.style.display = "none";
+      warningEl.innerText = "";
+      document.getElementById("btnExpert").classList.remove("low-confidence");
+
+      if (confidence < 70) {
+        warningEl.style.display = "block";
+        warningEl.innerText = T[lang].lowConf;
+        document.getElementById("btnExpert").classList.add("low-confidence");
       }
 
-      const file = event.target.files[0];
-      const img = document.createElement("img");
-      img.src = window.URL.createObjectURL(file);
-      img.width = 300;
+      const treatmentData = getTreatment(top.className);
+      document.getElementById("treatment").innerText = treatmentData[lang];
 
-      const preview = document.getElementById("preview");
-      preview.innerHTML = "";
-      preview.appendChild(img);
+      document.getElementById("result").innerText =
+        T[lang].predPrefix +
+        top.className +
+        " (" +
+        confidence.toFixed(2) +
+        "%)";
 
-      img.onload = async () => {
-        const prediction = await model.predict(img);
-        prediction.sort((a, b) => b.probability - a.probability);
+      document.getElementById("actions").style.display = "block";
 
-        const top = prediction[0];
-        const confidence = top.probability * 100;
-        
-
-const warningEl = document.getElementById("warning");
-warningEl.style.display = "none";
-warningEl.innerText = "";
-document.getElementById("btnExpert").classList.remove("low-confidence");
-        const treatmentData = getTreatment(top.className);
-document.getElementById("treatment").innerText = treatmentData[lang];
-
-if (confidence < 70) {
-  warningEl.style.display = "block";
- warningEl.innerText = T[lang].lowConf;
-  document.getElementById("btnExpert").classList.add("low-confidence");
-}
-lastPrediction = top;
-        document.getElementById("btnExpert").onclick = function() {
-  window.open("https://wa.me/919999955233?text=" + encodeURIComponent(
-    "Sugarcane AI: " + lastPrediction.className + " (" + (lastPrediction.probability*100).toFixed(2) + "%)"
-  ), "_blank");
-};
-document.getElementById("actions").style.display = "block";
-
-document.getElementById("btnCorrect").onclick = function() {
-  openFeedbackForm("Yes");
-};
-
-document.getElementById("btnWrong").onclick = function() {
-  openFeedbackForm("No");
-};
-        document.getElementById("result").innerText =
-         T[lang].predPrefix +
-          top.className +
-          " (" +
-          confidence.toFixed(2) +
-          "%)";
+      document.getElementById("btnExpert").onclick = function() {
+        window.open(
+          "https://wa.me/919999955233?text=" +
+          encodeURIComponent(
+            "KisanAI Result:\n" +
+            top.className +
+            " (" +
+            confidence.toFixed(2) +
+            "%)"
+          ),
+          "_blank"
+        );
       };
-    });
-    function openFeedbackForm(correctValue) {
-  if (!lastPrediction) return;
 
-  const disease = encodeURIComponent(lastPrediction.className);
-  const conf = encodeURIComponent((lastPrediction.probability * 100).toFixed(2));
-  const correct = encodeURIComponent(correctValue);
+      document.getElementById("btnCorrect").onclick = function() {
+        openFeedbackForm("Yes");
+      };
 
-  const url =
-    FORM_BASE +
-    "&entry.1340582940=" + disease +
-    "&entry.432078826=" + conf +
-    "&entry.2027263940=" + correct;
+      document.getElementById("btnWrong").onclick = function() {
+        openFeedbackForm("No");
+      };
+    };
+  });
 
-  window.open(url, "_blank");
-}
-  </script>
+  function openFeedbackForm(correctValue) {
+    if (!lastPrediction) return;
+
+    const disease = encodeURIComponent(lastPrediction.className);
+    const conf = encodeURIComponent((lastPrediction.probability * 100).toFixed(2));
+    const correct = encodeURIComponent(correctValue);
+
+    const url =
+      FORM_BASE +
+      "&entry.1340582940=" + disease +
+      "&entry.432078826=" + conf +
+      "&entry.2027263940=" + correct;
+
+    window.open(url, "_blank");
+  }
+
+</script>
 
 </body>
 </html>
