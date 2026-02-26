@@ -33,7 +33,13 @@
   cursor:pointer;
 }
   </style>
-  
+  #warning {
+  color: #b71c1c;
+  font-weight: bold;
+}
+.low-confidence {
+  border: 2px solid #b71c1c;
+}
   
 </head>
 
@@ -44,6 +50,7 @@
   <input type="file" id="imageUpload" accept="image/*">
   <div id="preview"></div>
   <div id="result"></div>
+  <div id="warning" style="margin-top:10px; font-size:16px; display:none;"></div>
 <div id="actions" style="margin-top:16px; display:none;">
   <button id="btnCorrect">✅ Correct</button>
   <button id="btnWrong">❌ Wrong</button>
@@ -84,6 +91,18 @@ const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Jo
         prediction.sort((a, b) => b.probability - a.probability);
 
         const top = prediction[0];
+        const confidence = top.probability * 100;
+
+const warningEl = document.getElementById("warning");
+warningEl.style.display = "none";
+warningEl.innerText = "";
+document.getElementById("btnExpert").classList.remove("low-confidence");
+
+if (confidence < 70) {
+  warningEl.style.display = "block";
+  warningEl.innerText = "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.";
+  document.getElementById("btnExpert").classList.add("low-confidence");
+}
 lastPrediction = top;
         document.getElementById("btnExpert").onclick = function() {
   window.open("https://wa.me/919999955233?text=" + encodeURIComponent(
@@ -103,7 +122,7 @@ document.getElementById("btnWrong").onclick = function() {
           "Prediction: " +
           top.className +
           " (" +
-          (top.probability * 100).toFixed(2) +
+          confidence.toFixed(2) +
           "%)";
       };
     });
