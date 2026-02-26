@@ -4,180 +4,91 @@
   <meta charset="UTF-8">
   <title>KisanAI 🌾</title>
 
-  <!-- TensorFlow JS -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
-
-  <!-- Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
   <style>
     body{
-  font-family: Arial, sans-serif;
-  background:#f6f7fb;
-  margin:0;
-  padding:24px 14px;
-}
-
-.container{
-  max-width:520px;
-  margin:0 auto;
-}
-
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:14px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.logo{
-  width:44px;
-  height:44px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.06);
-}
-
-.brandTitle{
-  font-size:22px;
-  font-weight:800;
-  line-height:1.1;
-}
-
-.tagline{
-  font-size:13px;
-  color:#555;
-  margin-top:2px;
-}
-
-.card{
-  background:#ffffff;
-  border-radius:18px;
-  padding:16px;
-  box-shadow:0 10px 24px rgba(0,0,0,0.07);
-}
-
-input[type="file"]{
-  width:100%;
-  padding:12px;
-  border:1px solid #e7e7ef;
-  border-radius:12px;
-  background:#fafafe;
-}
-
-#preview img{
-  margin-top:12px;
-  border-radius:14px;
-  max-width:100%;
-}
-
-.result{
-  margin-top:14px;
-  font-size:18px;
-  font-weight:700;
-}
-
-.warning{
-  margin-top:10px;
-  padding:10px 12px;
-  background:#fff1f1;
-  border:1px solid #ffd6d6;
-  border-radius:14px;
-  color:#b71c1c;
-  font-weight:700;
-}
-
-.treatment{
-  margin-top:10px;
-  padding:10px 12px;
-  background:#f3fff4;
-  border:1px solid #cdf5d0;
-  border-radius:14px;
-  color:#1b5e20;
-}
-
-button{
-  padding:10px 12px;
-  margin:6px 6px 0 0;
-  font-size:15px;
-  border-radius:12px;
-  border:1px solid transparent;
-  cursor:pointer;
-}
-
-.primary{ background:#1b5e20; color:white; }
-.secondary{ background:#eef0f6; color:#111; border-color:#e1e4ee; }
-.whatsapp{ background:#25D366; color:white; }
-.ghost{ background:transparent; border-color:#e1e4ee; }
-
-.low-confidence{
-  border:2px solid #b71c1c !important;
-}
-
-.footer{
-  margin-top:12px;
-  font-size:12px;
-  color:#666;
-  text-align:center;
-}
-</style>
-  </head>
+      font-family: Arial, sans-serif;
+      background:#f6f7fb;
+      margin:0;
+      padding:24px 14px;
+    }
+    .container{ max-width:520px; margin:0 auto; }
+    .header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; margin-bottom:14px;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .logo{
+      width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+      font-size:22px; background:#fff; border-radius:14px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.06);
+    }
+    .brandTitle{ font-size:22px; font-weight:800; line-height:1.1; }
+    .tagline{ font-size:13px; color:#555; margin-top:2px; }
+    .card{
+      background:#fff; border-radius:18px; padding:16px;
+      box-shadow:0 10px 24px rgba(0,0,0,0.07);
+    }
+    input[type="file"]{
+      width:100%; padding:12px; border:1px solid #e7e7ef;
+      border-radius:12px; background:#fafafe;
+    }
+    #preview img{ margin-top:12px; border-radius:14px; max-width:100%; }
+    .result{ margin-top:14px; font-size:18px; font-weight:700; }
+    .warning{
+      margin-top:10px; padding:10px 12px; background:#fff1f1;
+      border:1px solid #ffd6d6; border-radius:14px; color:#b71c1c; font-weight:700;
+    }
+    .treatment{
+      margin-top:10px; padding:10px 12px; background:#f3fff4;
+      border:1px solid #cdf5d0; border-radius:14px; color:#1b5e20;
+    }
+    button{
+      padding:10px 12px; margin:6px 6px 0 0; font-size:15px;
+      border-radius:12px; border:1px solid transparent; cursor:pointer;
+    }
+    .primary{ background:#1b5e20; color:white; }
+    .secondary{ background:#eef0f6; color:#111; border-color:#e1e4ee; }
+    .whatsapp{ background:#25D366; color:white; }
+    .ghost{ background:transparent; border-color:#e1e4ee; }
+    .low-confidence{ border:2px solid #b71c1c !important; }
+    .footer{ margin-top:12px; font-size:12px; color:#666; text-align:center; }
+  </style>
+</head>
 
 <body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">🌾</div>
+        <div>
+          <div id="title" class="brandTitle">KisanAI</div>
+          <div id="tagline" class="tagline">AI help for crops & farmers</div>
+        </div>
+      </div>
+      <button id="langToggle" class="ghost">Switch to हिंदी</button>
+    </div>
 
- <div class="container">
-  <div class="header">
-    <div class="brand">
-      <div class="logo">🌾</div>
-      <div>
-        <div id="title" class="brandTitle">KisanAI</div>
-        <div id="tagline" class="tagline">AI help for crops & farmers</div>
+    <div class="card">
+      <input type="file" id="imageUpload" accept="image/*">
+      <div id="preview"></div>
+
+      <div id="result" class="result"></div>
+      <div id="warning" class="warning" style="display:none;"></div>
+      <div id="treatment" class="treatment"></div>
+
+      <div id="actions" style="margin-top:16px; display:none;">
+        <button id="btnCorrect" class="primary">✅ Correct</button>
+        <button id="btnWrong" class="secondary">❌ Wrong</button>
+        <button id="btnExpert" class="whatsapp">💬 WhatsApp Expert</button>
       </div>
     </div>
-    <button id="langToggle" class="ghost">Switch to हिंदी</button>
-  </div>
 
-  <div class="card">
-    <input type="file" id="imageUpload" accept="image/*">
-    <div id="preview"></div>
-
-    <div id="result" class="result"></div>
-    <div id="warning" class="warning" style="display:none;"></div>
-    <div id="treatment" class="treatment"></div>
-
-    <div id="actions" style="margin-top:16px; display:none;">
-      <button id="btnCorrect" class="primary">✅ Correct</button>
-      <button id="btnWrong" class="secondary">❌ Wrong</button>
-      <button id="btnExpert" class="whatsapp">💬 WhatsApp Expert</button>
+    <div class="footer">
+      <span>For best results: take a close, clear photo in daylight.</span>
     </div>
-  </div>
-
-  <div class="footer">
-    <span>For best results: take a close, clear photo in daylight.</span>
-  </div>
-</div>
-
-  <input type="file" id="imageUpload" accept="image/*">
-  <div id="preview"></div>
-  <div id="result"></div>
-  <div id="warning" style="margin-top:10px; font-size:16px; display:none;"></div>
-  <div id="treatment" style="margin-top:10px; font-size:16px;"></div>
-
-  <div id="actions" style="margin-top:16px; display:none;">
-    <button id="btnCorrect">✅ Correct</button>
-    <button id="btnWrong">❌ Wrong</button>
-    <button id="btnExpert">💬 WhatsApp Expert</button>
   </div>
 
 <script>
@@ -185,33 +96,32 @@ button{
   let modelReady = false;
 
   let lastPrediction = null;
-  let lastConfidence = null; // store last confidence so warning can re-render on language change
+  let lastConfidence = null;
 
   const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
 
-  // Language state (persist in browser)
-  let lang = localStorage.getItem("kisanai_lang") || "en"; // "en" or "hi"
+  let lang = localStorage.getItem("kisanai_lang") || "en";
 
   const T = {
     en: {
       title: "KisanAI 🌾",
+      tagline: "AI help for crops & farmers",
       correct: "✅ Correct",
       wrong: "❌ Wrong",
       expert: "💬 WhatsApp Expert",
       lowConf: "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.",
       predPrefix: "Prediction: ",
       switchTo: "Switch to हिंदी"
-      tagline: "AI help for crops & farmers",
     },
     hi: {
       title: "किसान AI 🌾",
+      tagline: "फसलों और किसानों के लिए AI सहायता",
       correct: "✅ सही",
       wrong: "❌ गलत",
       expert: "💬 WhatsApp सहायता",
       lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
       predPrefix: "नतीजा: ",
       switchTo: "Switch to English"
-      tagline: "फसलों और किसानों के लिए AI सहायता",
     }
   };
 
@@ -246,7 +156,6 @@ button{
     const warningEl = document.getElementById("warning");
     const expertBtn = document.getElementById("btnExpert");
 
-    // Reset
     warningEl.style.display = "none";
     warningEl.innerText = "";
     expertBtn.classList.remove("low-confidence");
@@ -261,19 +170,16 @@ button{
   function applyLang() {
     document.getElementById("title").innerText = T[lang].title;
     document.getElementById("tagline").innerText = T[lang].tagline;
-    
+
     document.getElementById("btnCorrect").innerText = T[lang].correct;
     document.getElementById("btnWrong").innerText = T[lang].wrong;
     document.getElementById("btnExpert").innerText = T[lang].expert;
 
-    // Button label shows what it will switch TO (clear & not confusing)
     document.getElementById("langToggle").innerText = T[lang].switchTo;
 
-    // Re-render result/treatment/warning if we already predicted
     if (lastPrediction) {
       document.getElementById("result").innerText =
-        T[lang].predPrefix +
-        lastPrediction.className +
+        T[lang].predPrefix + lastPrediction.className +
         " (" + (lastConfidence ?? (lastPrediction.probability * 100)).toFixed(2) + "%)";
 
       const treatmentData = getTreatment(lastPrediction.className);
@@ -325,39 +231,26 @@ button{
       lastPrediction = top;
       lastConfidence = confidence;
 
-      // Treatment
       const treatmentData = getTreatment(top.className);
       document.getElementById("treatment").innerText = treatmentData[lang] || "";
 
-      // Result
       document.getElementById("result").innerText =
         T[lang].predPrefix + top.className + " (" + confidence.toFixed(2) + "%)";
 
-      // Warning (uses current language)
       renderWarning();
 
-      // Show action buttons
       document.getElementById("actions").style.display = "block";
 
-      // WhatsApp
       document.getElementById("btnExpert").onclick = function() {
         window.open(
           "https://wa.me/919999955233?text=" +
-          encodeURIComponent(
-            "KisanAI Result:\n" +
-            top.className + " (" + confidence.toFixed(2) + "%)"
-          ),
+          encodeURIComponent("KisanAI Result:\n" + top.className + " (" + confidence.toFixed(2) + "%)"),
           "_blank"
         );
       };
 
-      // Feedback
-      document.getElementById("btnCorrect").onclick = function() {
-        openFeedbackForm("Yes");
-      };
-      document.getElementById("btnWrong").onclick = function() {
-        openFeedbackForm("No");
-      };
+      document.getElementById("btnCorrect").onclick = function() { openFeedbackForm("Yes"); };
+      document.getElementById("btnWrong").onclick = function() { openFeedbackForm("No"); };
     };
   });
 
@@ -377,6 +270,5 @@ button{
     window.open(url, "_blank");
   }
 </script>
-
 </body>
 </html>
