@@ -17,9 +17,7 @@
       margin-top: 50px;
     }
 
-    img {
-      margin-top: 20px;
-    }
+    img { margin-top: 20px; }
 
     #result {
       margin-top: 20px;
@@ -51,7 +49,7 @@
   <h1 id="title">KisanAI 🌾</h1>
 
   <div style="margin-bottom:12px;">
-    <button id="langToggle">🌐 हिंदी</button>
+    <button id="langToggle">Switch to हिंदी</button>
   </div>
 
   <input type="file" id="imageUpload" accept="image/*">
@@ -67,14 +65,16 @@
   </div>
 
 <script>
-
   let model;
   let modelReady = false;
+
   let lastPrediction = null;
+  let lastConfidence = null; // store last confidence so warning can re-render on language change
 
   const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
 
-  let lang = "en";
+  // Language state (persist in browser)
+  let lang = localStorage.getItem("kisanai_lang") || "en"; // "en" or "hi"
 
   const T = {
     en: {
@@ -83,7 +83,8 @@
       wrong: "❌ Wrong",
       expert: "💬 WhatsApp Expert",
       lowConf: "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.",
-      predPrefix: "Prediction: "
+      predPrefix: "Prediction: ",
+      switchTo: "Switch to हिंदी"
     },
     hi: {
       title: "किसान AI 🌾",
@@ -91,12 +92,13 @@
       wrong: "❌ गलत",
       expert: "💬 WhatsApp सहायता",
       lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
-      predPrefix: "नतीजा: "
+      predPrefix: "नतीजा: ",
+      switchTo: "Switch to English"
     }
   };
 
   function getTreatment(disease) {
-    const d = disease.toLowerCase();
+    const d = (disease || "").toLowerCase();
 
     if (d.includes("red")) {
       return {
@@ -122,29 +124,48 @@
     return { en: "", hi: "" };
   }
 
+  function renderWarning() {
+    const warningEl = document.getElementById("warning");
+    const expertBtn = document.getElementById("btnExpert");
+
+    // Reset
+    warningEl.style.display = "none";
+    warningEl.innerText = "";
+    expertBtn.classList.remove("low-confidence");
+
+    if (lastConfidence !== null && lastConfidence < 70) {
+      warningEl.style.display = "block";
+      warningEl.innerText = T[lang].lowConf;
+      expertBtn.classList.add("low-confidence");
+    }
+  }
+
   function applyLang() {
     document.getElementById("title").innerText = T[lang].title;
     document.getElementById("btnCorrect").innerText = T[lang].correct;
     document.getElementById("btnWrong").innerText = T[lang].wrong;
     document.getElementById("btnExpert").innerText = T[lang].expert;
 
-    document.getElementById("langToggle").innerText =
-      (lang === "en") ? "🌐 हिंदी" : "🌐 English";
+    // Button label shows what it will switch TO (clear & not confusing)
+    document.getElementById("langToggle").innerText = T[lang].switchTo;
 
+    // Re-render result/treatment/warning if we already predicted
     if (lastPrediction) {
-      const treatmentData = getTreatment(lastPrediction.className);
-      document.getElementById("treatment").innerText = treatmentData[lang];
       document.getElementById("result").innerText =
         T[lang].predPrefix +
         lastPrediction.className +
-        " (" +
-        (lastPrediction.probability * 100).toFixed(2) +
-        "%)";
+        " (" + (lastConfidence ?? (lastPrediction.probability * 100)).toFixed(2) + "%)";
+
+      const treatmentData = getTreatment(lastPrediction.className);
+      document.getElementById("treatment").innerText = treatmentData[lang] || "";
     }
+
+    renderWarning();
   }
 
   document.getElementById("langToggle").onclick = function() {
     lang = (lang === "en") ? "hi" : "en";
+    localStorage.setItem("kisanai_lang", lang);
     applyLang();
   };
 
@@ -155,11 +176,9 @@
     modelReady = true;
     console.log("Model Loaded Successfully");
   }
-
   loadModel();
 
   document.getElementById("imageUpload").addEventListener("change", async function (event) {
-
     if (!modelReady) {
       alert("Model is still loading. Please wait a few seconds and try again.");
       return;
@@ -177,7 +196,6 @@
     preview.appendChild(img);
 
     img.onload = async () => {
-
       const prediction = await model.predict(img);
       prediction.sort((a, b) => b.probability - a.probability);
 
@@ -185,48 +203,38 @@
       const confidence = top.probability * 100;
 
       lastPrediction = top;
+      lastConfidence = confidence;
 
-      const warningEl = document.getElementById("warning");
-      warningEl.style.display = "none";
-      warningEl.innerText = "";
-      document.getElementById("btnExpert").classList.remove("low-confidence");
-
-      if (confidence < 70) {
-        warningEl.style.display = "block";
-        warningEl.innerText = T[lang].lowConf;
-        document.getElementById("btnExpert").classList.add("low-confidence");
-      }
-
+      // Treatment
       const treatmentData = getTreatment(top.className);
-      document.getElementById("treatment").innerText = treatmentData[lang];
+      document.getElementById("treatment").innerText = treatmentData[lang] || "";
 
+      // Result
       document.getElementById("result").innerText =
-        T[lang].predPrefix +
-        top.className +
-        " (" +
-        confidence.toFixed(2) +
-        "%)";
+        T[lang].predPrefix + top.className + " (" + confidence.toFixed(2) + "%)";
 
+      // Warning (uses current language)
+      renderWarning();
+
+      // Show action buttons
       document.getElementById("actions").style.display = "block";
 
+      // WhatsApp
       document.getElementById("btnExpert").onclick = function() {
         window.open(
           "https://wa.me/919999955233?text=" +
           encodeURIComponent(
             "KisanAI Result:\n" +
-            top.className +
-            " (" +
-            confidence.toFixed(2) +
-            "%)"
+            top.className + " (" + confidence.toFixed(2) + "%)"
           ),
           "_blank"
         );
       };
 
+      // Feedback
       document.getElementById("btnCorrect").onclick = function() {
         openFeedbackForm("Yes");
       };
-
       document.getElementById("btnWrong").onclick = function() {
         openFeedbackForm("No");
       };
@@ -237,7 +245,7 @@
     if (!lastPrediction) return;
 
     const disease = encodeURIComponent(lastPrediction.className);
-    const conf = encodeURIComponent((lastPrediction.probability * 100).toFixed(2));
+    const conf = encodeURIComponent((lastConfidence ?? (lastPrediction.probability * 100)).toFixed(2));
     const correct = encodeURIComponent(correctValue);
 
     const url =
@@ -248,7 +256,6 @@
 
     window.open(url, "_blank");
   }
-
 </script>
 
 </body>
