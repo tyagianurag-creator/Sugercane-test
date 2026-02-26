@@ -46,8 +46,10 @@
 
 <body>
 
-  <h1>Sugarcane Disease Detection 🌾</h1>
-
+  <h1 id="title">Sugarcane Disease Detection 🌾</h1>
+<div style="margin-bottom:12px;">
+  <button id="langToggle">🌐 हिंदी</button>
+</div>
   <input type="file" id="imageUpload" accept="image/*">
   <div id="preview"></div>
   <div id="result"></div>
@@ -63,6 +65,46 @@
 let lastPrediction = null;
 
 const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSem_oTTQBtdWz8NBy8Joh0WTU6NHorbT4O8eHg6-ysgozgjBg/viewform?usp=pp_url";
+    let lang = "en"; // default
+
+const T = {
+  en: {
+    title: "Sugarcane Disease Detection 🌾",
+    uploadHint: "",
+    correct: "✅ Correct",
+    wrong: "❌ Wrong",
+    expert: "💬 WhatsApp Expert",
+    lowConf: "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.",
+    predPrefix: "Prediction: "
+  },
+  hi: {
+    title: "गन्ना रोग पहचान 🌾",
+    uploadHint: "",
+    correct: "✅ सही",
+    wrong: "❌ गलत",
+    expert: "💬 WhatsApp सहायता",
+    lowConf: "⚠️ कम भरोसा। कृपया साफ़ फोटो लें या WhatsApp पर विशेषज्ञ से पूछें।",
+    predPrefix: "नतीजा: "
+  }
+};
+
+function applyLang() {
+  document.getElementById("title").innerText = T[lang].title;
+  document.getElementById("btnCorrect").innerText = T[lang].correct;
+  document.getElementById("btnWrong").innerText = T[lang].wrong;
+  document.getElementById("btnExpert").innerText = T[lang].expert;
+
+  // toggle button text
+  document.getElementById("langToggle").innerText = (lang === "en") ? "🌐 हिंदी" : "🌐 English";
+}
+
+document.getElementById("langToggle").onclick = function() {
+  lang = (lang === "en") ? "hi" : "en";
+  applyLang();
+};
+
+// apply on load
+applyLang();
     async function loadModel() {
       model = await tmImage.load("./model.json", "./metadata.json");
       modelReady = true;
@@ -101,7 +143,7 @@ document.getElementById("btnExpert").classList.remove("low-confidence");
 
 if (confidence < 70) {
   warningEl.style.display = "block";
-  warningEl.innerText = "⚠️ Low confidence. Please take a clearer photo or consult expert on WhatsApp.";
+ warningEl.innerText = T[lang].lowConf;
   document.getElementById("btnExpert").classList.add("low-confidence");
 }
 lastPrediction = top;
@@ -120,7 +162,7 @@ document.getElementById("btnWrong").onclick = function() {
   openFeedbackForm("No");
 };
         document.getElementById("result").innerText =
-          "Prediction: " +
+         T[lang].predPrefix +
           top.className +
           " (" +
           confidence.toFixed(2) +
